@@ -391,24 +391,31 @@ public class AWSCatalogMetastoreClient implements IMetaStoreClient {
 
   @Override
   public void alter_table(
-      String dbName,
-      String tblName,
-      org.apache.hadoop.hive.metastore.api.Table table
+          String dbName,
+          String tblName,
+          org.apache.hadoop.hive.metastore.api.Table table
   ) throws InvalidOperationException, MetaException, TException {
-      alter_table(dbName, tblName, table, false);
+    alter_table(dbName, tblName, table, false, false);
   }
 
   @Override
   public void alter_table(
-      String dbName,
-      String tblName,
-      org.apache.hadoop.hive.metastore.api.Table table,
-      boolean cascade
+          String dbName,
+          String tblName,
+          org.apache.hadoop.hive.metastore.api.Table table,
+          boolean cascade,
+          boolean SkipArchiveTable
   ) throws InvalidOperationException, MetaException, TException {
     EnvironmentContext environmentContext = null;
     if (cascade) {
       environmentContext = new EnvironmentContext();
       environmentContext.putToProperties("CASCADE", StatsSetupConst.TRUE);
+    }
+    if (SkipArchiveTable) {
+      if (environmentContext == null) {
+        environmentContext = new EnvironmentContext();
+      }
+      environmentContext.putToProperties("skipAWSGlueArchive", StatsSetupConst.TRUE);
     }
     glueMetastoreClientDelegate.alterTable(dbName, tblName, table, environmentContext);
   }
